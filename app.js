@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const port = process.env.PORT | 3000
+const port = process.env.PORT || 3000
 const exphbs = require('express-handlebars')
 
 app.use(bodyParser.json())
