@@ -86,12 +86,30 @@
           usePointStyle: true
         }
       },
+      tooltips: {
+        mode: 'index',
+        callbacks: {
+          label: function (tooltipItem, data) {
+            return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          }
+        }
+      },
       scales: {
         yAxes: [{
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
           position: 'left',
-          id: 'y-axis-1'
+          id: 'y-axis-1',
+          scaleLabel: {
+            display: true,
+            labelString: '累積人數'
+          },
+          ticks: {
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return numeral(value).format('0,0');
+            }
+          }
         }, {
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
@@ -99,6 +117,16 @@
           id: 'y-axis-2',
           gridLines: {
             drawOnChartArea: false
+          },
+          scaleLabel: {
+            display: true,
+            labelString: '每日人數'
+          },
+          ticks: {
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return numeral(value).format('0,0');
+            }
           }
         }]
       }
@@ -141,12 +169,30 @@
           usePointStyle: true
         }
       },
+      tooltips: {
+        mode: 'index',
+        callbacks: {
+          label: function (tooltipItem, data) {
+            return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          }
+        }
+      },
       scales: {
         yAxes: [{
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
           position: 'left',
-          id: 'y-axis-1'
+          id: 'y-axis-1',
+          scaleLabel: {
+            display: true,
+            labelString: '累積金額'
+          },
+          ticks: {
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return '$' + numeral(value).format('0,0');
+            }
+          }
         }, {
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
@@ -154,6 +200,16 @@
           id: 'y-axis-2',
           gridLines: {
             drawOnChartArea: false
+          },
+          scaleLabel: {
+            display: true,
+            labelString: '每日金額'
+          },
+          ticks: {
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return '$' + numeral(value).format('0,0');
+            }
           }
         }]
       }
