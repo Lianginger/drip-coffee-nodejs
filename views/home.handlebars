@@ -19,6 +19,9 @@
       <canvas id="backerChart"></canvas>
     </div>
   </div>
+  <div class="text-center text-secondary">
+    <p>點擊每日資料點，可以看更詳細的 24 小時圖表，點擊圖表空白處即可返回每日圖表</p>
+  </div>
 </div>
 
 <script>
@@ -30,7 +33,7 @@
     data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
     dataMart[date] ? dataMart[date].push(data) : dataMart[date] = [data]
   })
-  console.log(dataMart)
+  // console.log(dataMart)
 
   const dateRange = Object.keys(dataMart)
   const dailyData = Object.values(dataMart)
@@ -71,7 +74,7 @@
       {
         type: 'bar',
         yAxisID: 'y-axis-2',
-        label: '每日人數',
+        label: '增加人數',
         backgroundColor: brandGradient,
         data: dailyBackersData
       }]
@@ -120,7 +123,7 @@
           },
           scaleLabel: {
             display: true,
-            labelString: '每日人數'
+            labelString: '增加人數'
           },
           ticks: {
             // Include a dollar sign in the ticks
@@ -129,6 +132,24 @@
             }
           }
         }]
+      },
+      onClick: function (c, i) {
+        e = i[0];
+
+        if (e === undefined) {
+          restoreBackersChart(this)
+          return
+        }
+
+        var x_value = this.data.labels[e._index];
+        // var y_value = this.data.datasets[0].data[e._index];
+
+        if (dataMart[x_value] === undefined) {
+          return
+        }
+        const hourLabel = dataMart[x_value].map(item => item[0])
+        const cumulativeHourData = dataMart[x_value].map(item => item[1])
+        showDataInOneDay(this, hourLabel, cumulativeHourData)
       }
     }
   })
@@ -152,7 +173,7 @@
       {
         type: 'bar',
         yAxisID: 'y-axis-2',
-        label: '每日金額',
+        label: '增加金額',
         backgroundColor: brandGradient,
         data: dailyFundraisingData
       }
@@ -173,7 +194,7 @@
         mode: 'index',
         callbacks: {
           label: function (tooltipItem, data) {
-            return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
           }
         }
       },
@@ -203,7 +224,7 @@
           },
           scaleLabel: {
             display: true,
-            labelString: '每日金額'
+            labelString: '增加金額'
           },
           ticks: {
             // Include a dollar sign in the ticks
@@ -212,7 +233,49 @@
             }
           }
         }]
+      },
+      onClick: function (c, i) {
+        e = i[0];
+
+        if (e === undefined) {
+          restoreFundraisingChart(this)
+          return
+        }
+
+        var x_value = this.data.labels[e._index];
+        // var y_value = this.data.datasets[0].data[e._index];
+
+        if (dataMart[x_value] === undefined) {
+          return
+        }
+        const hourLabel = dataMart[x_value].map(item => item[0])
+        const cumulativeHourData = dataMart[x_value].map(item => item[2])
+        showDataInOneDay(this, hourLabel, cumulativeHourData)
       }
     }
   })
+
+  function showDataInOneDay(chart, hourLabel, cumulativeHourData) {
+    chart.data.labels = hourLabel
+    chart.data.datasets[0].data = cumulativeHourData
+    const hourlyData = cumulativeHourData.map((data, index, dataSet) => {
+      return data - (index ? dataSet[index - 1] : dataSet[index])
+    })
+    chart.data.datasets[1].data = hourlyData
+    chart.update()
+  }
+
+  function restoreFundraisingChart(chart) {
+    chart.data.labels = dateRange
+    chart.data.datasets[0].data = cumulativeFundraisingData
+    chart.data.datasets[1].data = dailyFundraisingData
+    chart.update()
+  }
+
+  function restoreBackersChart(chart) {
+    chart.data.labels = dateRange
+    chart.data.datasets[0].data = cumulativeBackersData
+    chart.data.datasets[1].data = dailyBackersData
+    chart.update()
+  }
 </script>
