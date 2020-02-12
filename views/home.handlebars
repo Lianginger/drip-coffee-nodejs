@@ -1,0 +1,162 @@
+<div class="container">
+  <ul class="nav" id="myTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="fundRaise-tab" data-toggle="tab" href="#fundRaise" role="tab"
+        aria-controls="fundRaise" aria-selected="false">贊助金額</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="backer-tab" data-toggle="tab" href="#backer" role="tab" aria-controls="backer"
+        aria-selected="true">贊助人數</a>
+    </li>
+  </ul>
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="fundRaise" role="tabpanel" aria-labelledby="fundRaise-tab"
+      style="position: relative; height:350px;">
+      <canvas id="fundRaiseChart"></canvas>
+    </div>
+    <div class="tab-pane fade" id="backer" role="tabpanel" aria-labelledby="backer-tab"
+      style="position: relative; height:350px;">
+      <canvas id="backerChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  const rawData = {{ data.timeline }}
+  rawData.sort((a, b) => a[0] - b[0])
+  const dataMart = {}
+  rawData.map(data => {
+    const date = moment(new Date(data[0] * 1000)).format('MM-DD')
+    data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
+    dataMart[date] ? dataMart[date].push(data) : dataMart[date] = [data]
+  })
+  console.log(dataMart)
+
+  const dateRange = Object.keys(dataMart)
+  const dailyData = Object.values(dataMart)
+  const length = dateRange.length
+
+  const cumulativeBackersData = []
+  const dailyBackersData = []
+  const cumulativeFundraisingData = []
+  const dailyFundraisingData = []
+  for (let i = 0; i < length; i++) {
+    const previousData = i ? dailyData[i - 1] : [0, 0, 0]
+    const data = dailyData[i]
+    cumulativeBackersData.push(data[data.length - 1][1])
+    dailyBackersData.push(data[data.length - 1][1] - previousData[previousData.length - 1][1])
+    cumulativeFundraisingData.push(data[data.length - 1][2])
+    dailyFundraisingData.push(data[data.length - 1][2] - previousData[previousData.length - 1][2])
+  }
+
+  const backer = document.getElementById('backerChart').getContext('2d')
+  const brandGradient = backer.createLinearGradient(0, 0, 0, 300)
+  brandGradient.addColorStop(0.5, "#FFB819")
+  brandGradient.addColorStop(1, "#FF48CC")
+  const backerChart = new Chart(backer, {
+    // The type of chart we want to create
+    type: 'bar',
+
+    // The data for our dataset
+    data: {
+      labels: dateRange,
+      datasets: [{
+        type: 'line',
+        yAxisID: 'y-axis-1',
+        label: '累積人數',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderColor: '#8B857C',
+        data: cumulativeBackersData
+      },
+      {
+        type: 'bar',
+        yAxisID: 'y-axis-2',
+        label: '每日人數',
+        backgroundColor: brandGradient,
+        data: dailyBackersData
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'left',
+          id: 'y-axis-1'
+        }, {
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'right',
+          id: 'y-axis-2',
+          gridLines: {
+            drawOnChartArea: false
+          }
+        }]
+      }
+    }
+  })
+
+  const fundRaise = document.getElementById('fundRaiseChart').getContext('2d')
+  const fundRaiseChart = new Chart(fundRaise, {
+    // The type of chart we want to create
+    type: 'bar',
+
+    // The data for our dataset
+    data: {
+      labels: dateRange,
+      datasets: [{
+        type: 'line',
+        yAxisID: 'y-axis-1',
+        label: '累積金額',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderColor: '#8B857C',
+        data: cumulativeFundraisingData
+      },
+      {
+        type: 'bar',
+        yAxisID: 'y-axis-2',
+        label: '每日金額',
+        backgroundColor: brandGradient,
+        data: dailyFundraisingData
+      }
+      ]
+    },
+
+    // Configuration options go here
+    // Configuration options go here
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        labels: {
+          usePointStyle: true
+        }
+      },
+      scales: {
+        yAxes: [{
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'left',
+          id: 'y-axis-1'
+        }, {
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'right',
+          id: 'y-axis-2',
+          gridLines: {
+            drawOnChartArea: false
+          }
+        }]
+      }
+    }
+  })
+</script>
