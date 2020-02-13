@@ -11,22 +11,24 @@
   </ul>
   <div class="tab-content" id="myTabContent">
     <div class="tab-pane fade show active" id="fundRaise" role="tabpanel" aria-labelledby="fundRaise-tab"
-      style="position: relative; height:350px;">
+      style="position: relative; height:400px;">
       <canvas id="fundRaiseChart"></canvas>
     </div>
     <div class="tab-pane fade" id="backer" role="tabpanel" aria-labelledby="backer-tab"
-      style="position: relative; height:350px;">
+      style="position: relative; height:400px;">
       <canvas id="backerChart"></canvas>
     </div>
   </div>
   <div class="text-center text-secondary">
-    <p>點擊每日資料點，可以看更詳細的 24 小時圖表，點擊圖表空白處即可返回每日圖表</p>
+    <p>點擊每日資料點，可以展開更詳細的 24 小時圖表，點擊圖表空白處即可返回每日圖表</p>
   </div>
 </div>
 
 <script>
   const rawData = {{ data.timeline }}
   rawData.sort((a, b) => a[0] - b[0])
+  const year = moment(rawData[0][0] * 1000).format('YYYY')
+
   const dataMart = {}
   rawData.map(data => {
     const date = moment(new Date(data[0] * 1000)).format('MM-DD')
@@ -53,13 +55,12 @@
   }
 
   const backer = document.getElementById('backerChart').getContext('2d')
-  const brandGradient = backer.createLinearGradient(0, 0, 0, 300)
+  const brandGradient = backer.createLinearGradient(0, 0, 0, 350)
   brandGradient.addColorStop(0.5, "#FFB819")
   brandGradient.addColorStop(1, "#FF48CC")
   const backerChart = new Chart(backer, {
     // The type of chart we want to create
     type: 'bar',
-
     // The data for our dataset
     data: {
       labels: dateRange,
@@ -82,6 +83,13 @@
 
     // Configuration options go here
     options: {
+      title: {
+        display: true,
+        fontSize: 20,
+        fontColor: "#000",
+        text: year,
+        position: 'bottom'
+      },
       responsive: true,
       maintainAspectRatio: false,
       legend: {
@@ -141,15 +149,16 @@
           return
         }
 
-        var x_value = this.data.labels[e._index];
-        // var y_value = this.data.datasets[0].data[e._index];
+        var x_value = this.data.labels[e._index]
+        // var y_value = this.data.datasets[0].data[e._index]
+        const date = x_value
 
         if (dataMart[x_value] === undefined) {
           return
         }
         const hourLabel = dataMart[x_value].map(item => item[0])
         const cumulativeHourData = dataMart[x_value].map(item => item[1])
-        showDataInOneDay(this, hourLabel, cumulativeHourData)
+        showDataInOneDay(this, date, hourLabel, cumulativeHourData)
       }
     }
   })
@@ -183,6 +192,13 @@
     // Configuration options go here
     // Configuration options go here
     options: {
+      title: {
+        display: true,
+        fontSize: 20,
+        fontColor: '#000',
+        text: year,
+        position: 'bottom'
+      },
       responsive: true,
       maintainAspectRatio: false,
       legend: {
@@ -242,20 +258,23 @@
           return
         }
 
-        var x_value = this.data.labels[e._index];
-        // var y_value = this.data.datasets[0].data[e._index];
+        var x_value = this.data.labels[e._index]
+        // var y_value = this.data.datasets[0].data[e._index]
+        const date = x_value
 
         if (dataMart[x_value] === undefined) {
           return
         }
+
         const hourLabel = dataMart[x_value].map(item => item[0])
         const cumulativeHourData = dataMart[x_value].map(item => item[2])
-        showDataInOneDay(this, hourLabel, cumulativeHourData)
+        showDataInOneDay(this, date, hourLabel, cumulativeHourData)
       }
     }
   })
 
-  function showDataInOneDay(chart, hourLabel, cumulativeHourData) {
+  function showDataInOneDay(chart, date, hourLabel, cumulativeHourData) {
+    chart.options.title.text = year + '-' + date
     chart.data.labels = hourLabel
     chart.data.datasets[0].data = cumulativeHourData
     const hourlyData = cumulativeHourData.map((data, index, dataSet) => {
@@ -266,6 +285,7 @@
   }
 
   function restoreFundraisingChart(chart) {
+    chart.options.title.text = year
     chart.data.labels = dateRange
     chart.data.datasets[0].data = cumulativeFundraisingData
     chart.data.datasets[1].data = dailyFundraisingData
@@ -273,6 +293,7 @@
   }
 
   function restoreBackersChart(chart) {
+    chart.options.title.text = year
     chart.data.labels = dateRange
     chart.data.datasets[0].data = cumulativeBackersData
     chart.data.datasets[1].data = dailyBackersData
