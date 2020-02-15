@@ -31,13 +31,14 @@
 
   const dataMart = {}
   rawData.map(data => {
-    const date = moment(new Date(data[0] * 1000)).format('MM-DD')
+    const date = moment(new Date(data[0] * 1000)).format('YYYY-MM-DD')
     data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
     dataMart[date] ? dataMart[date].push(data) : dataMart[date] = [data]
   })
   // console.log(dataMart)
 
   const dateRange = Object.keys(dataMart)
+  const chartTitle = `${dateRange[0]} ~ ${dateRange[dateRange.length - 1]} (${dateRange.length}日)`
   const dailyData = Object.values(dataMart)
   const length = dateRange.length
 
@@ -87,7 +88,7 @@
         display: true,
         fontSize: 20,
         fontColor: "#000",
-        text: year,
+        text: chartTitle,
         position: 'bottom'
       },
       responsive: true,
@@ -196,7 +197,7 @@
         display: true,
         fontSize: 20,
         fontColor: '#000',
-        text: year,
+        text: chartTitle,
         position: 'bottom'
       },
       responsive: true,
@@ -274,7 +275,7 @@
   })
 
   function showDataInOneDay(chart, date, hourLabel, cumulativeHourData) {
-    chart.options.title.text = year + '-' + date
+    chart.options.title.text = date
     chart.data.labels = hourLabel
     chart.data.datasets[0].data = cumulativeHourData
     const hourlyData = cumulativeHourData.map((data, index, dataSet) => {
@@ -285,7 +286,7 @@
   }
 
   function restoreFundraisingChart(chart) {
-    chart.options.title.text = year
+    chart.options.title.text = chartTitle
     chart.data.labels = dateRange
     chart.data.datasets[0].data = cumulativeFundraisingData
     chart.data.datasets[1].data = dailyFundraisingData
@@ -293,7 +294,7 @@
   }
 
   function restoreBackersChart(chart) {
-    chart.options.title.text = year
+    chart.options.title.text = chartTitle
     chart.data.labels = dateRange
     chart.data.datasets[0].data = cumulativeBackersData
     chart.data.datasets[1].data = dailyBackersData

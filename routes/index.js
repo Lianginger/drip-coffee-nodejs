@@ -6,6 +6,6 @@ router.get('/', (req, res) => {
   res.send('hello')
 })
 
-router.get('/projects/:projectId', Projects.findOne)
+router.get('/platform/:platformId/projects/:projectId', Projects.findOne)
 
 module.exports = router
