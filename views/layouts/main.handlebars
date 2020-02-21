@@ -18,16 +18,34 @@
       font-family: 'Noto Sans TC', sans-serif;
     }
 
+    .nav-item {
+      position: relative;
+    }
+
     .nav-link,
     .nav-link:hover {
       color: #292A3B;
       font-weight: bold;
+      font-size: 15px;
+      line-height: 18px;
+      padding: 0.5em;
     }
 
-    .nav-link.active {
-      border-bottom: 3px solid;
-      border-image-source: linear-gradient(90deg, #FFB819 0%, #FF48CC 100%);
-      border-image-slice: 1;
+    .checkmark {
+      position: absolute;
+      top: 29px;
+      left: 19px;
+      height: 3px;
+      width: 36px;
+      border-radius: 3px;
+    }
+
+    .nav-link:hover~.checkmark {
+      background-color: #eee;
+    }
+
+    .nav-link.active~.checkmark {
+      background: linear-gradient(90deg, #FFB819 0%, #FF4BC8 99.99%, #FF48CC 100%);
     }
   </style>
 </head>
