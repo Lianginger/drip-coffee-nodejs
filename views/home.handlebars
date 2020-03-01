@@ -163,7 +163,7 @@
               beginAtZero: true,
               // Include a dollar sign in the ticks
               callback: function (value, index, values) {
-                return numeral(value).format('0,0');
+                return numeral(value).format('0,0 a');
               }
             }
           },
@@ -183,13 +183,13 @@
               beginAtZero: true,
               // Include a dollar sign in the ticks
               callback: function (value, index, values) {
-                return numeral(value).format('0,0');
+                return numeral(value).format('0,0 a');
               }
             }
           }
         ],
         xAxes: [{
-          barThickness: 10
+          barThickness: 6
         }]
       },
       onClick: function (c, i) {
@@ -264,7 +264,7 @@
             beginAtZero: true,
             // Include a dollar sign in the ticks
             callback: function (value, index, values) {
-              return '$' + numeral(value).format('0,0');
+              return '$' + numeral(value).format('0,0 a');
             }
           }
         }, {
@@ -283,12 +283,12 @@
             beginAtZero: true,
             // Include a dollar sign in the ticks
             callback: function (value, index, values) {
-              return '$' + numeral(value).format('0,0');
+              return '$' + numeral(value).format('0,0 a');
             }
           }
         }],
         xAxes: [{
-          barThickness: 10
+          barThickness: 6
         }]
       },
       onClick: function (c, i) {
