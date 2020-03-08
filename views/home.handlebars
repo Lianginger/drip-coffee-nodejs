@@ -107,12 +107,33 @@
       xAlign: 'center',
       cornerRadius: 5,
       callbacks: {
+        /* title: function (tooltipItem, data) {
+          return tooltipItem[0].xLabel
+        }, */
         label: function (tooltipItem, data) {
           return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         }
       }
-    }
+    },
   }
+  const chartConfigOptionsScalesXAxes = [{
+    barThickness: 6,
+    gridLines: {
+      zeroLineWidth: 1,
+      zeroLineColor: "#FF48CC",
+      z: 1000000
+    },
+    ticks: {
+      callback: function (value, index, values) {
+        // 判斷 x 軸的資料是否為日期，是日期會在 dataMart 找的到
+        // 若找不到，就是 24 小時資料
+        if (dataMart[value] === undefined) {
+          return value
+        }
+        return value.slice(5);
+      }
+    }
+  }]
 
   const backer = document.getElementById('backerChart').getContext('2d')
   const brandGradient = backer.createLinearGradient(0, 0, 0, 350)
@@ -153,7 +174,7 @@
           {
             type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
             display: true,
-            position: 'left',
+            position: 'right',
             id: 'y-axis-1',
             scaleLabel: {
               display: true,
@@ -170,7 +191,7 @@
           {
             type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
             display: true,
-            position: 'right',
+            position: 'left',
             id: 'y-axis-2',
             gridLines: {
               drawOnChartArea: false
@@ -188,9 +209,7 @@
             }
           }
         ],
-        xAxes: [{
-          barThickness: 6
-        }]
+        xAxes: chartConfigOptionsScalesXAxes
       },
       onClick: function (c, i) {
         e = i[0];
@@ -209,7 +228,7 @@
           return
         }
 
-        const hourLabel = dataMart[date].map(item => item[0])
+        const hourLabel = dataMart[date].map(item => item[0].slice(0, 2))
         const cumulativeHourData = dataMart[date].map(item => item[1])
         const previousDateLastData = dataMart[previousDate] ? dataMart[previousDate][dataMart[previousDate].length - 1][1] : 0
         showDataInOneDay(this, date, hourLabel, cumulativeHourData, previousDateLastData)
@@ -254,7 +273,7 @@
         yAxes: [{
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
-          position: 'left',
+          position: 'right',
           id: 'y-axis-1',
           scaleLabel: {
             display: true,
@@ -270,7 +289,7 @@
         }, {
           type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
           display: true,
-          position: 'right',
+          position: 'left',
           id: 'y-axis-2',
           gridLines: {
             drawOnChartArea: false
@@ -287,9 +306,7 @@
             }
           }
         }],
-        xAxes: [{
-          barThickness: 6
-        }]
+        xAxes: chartConfigOptionsScalesXAxes
       },
       onClick: function (c, i) {
         e = i[0];
@@ -308,7 +325,7 @@
           return
         }
 
-        const hourLabel = dataMart[date].map(item => item[0])
+        const hourLabel = dataMart[date].map(item => item[0].slice(0, 2))
         const cumulativeHourData = dataMart[date].map(item => item[2])
         const previousDateLastData = dataMart[previousDate] ? dataMart[previousDate][dataMart[previousDate].length - 1][2] : 0
         showDataInOneDay(this, date, hourLabel, cumulativeHourData, previousDateLastData)
