@@ -65,12 +65,15 @@
   // ChartJS start
   Chart.Tooltip.positioners.bottom = function (elements, eventPosition) {
     return {
-      x: eventPosition.x,
+      x: elements[0]._model.x,
       y: 380,
     }
   }
   // Global chart config options
   const chartConfigOptions = {
+    hover: {
+      intersect: false
+    },
     layout: {
       padding: {
         left: 0,
@@ -96,6 +99,7 @@
     },
     tooltips: {
       mode: 'index',
+      intersect: false,
       titleFontStyle: 'normal',
       titleAlign: 'center',
       position: 'bottom',
@@ -223,6 +227,7 @@
         const previousDate = this.data.labels[e._index - 1]
 
         if (dataMart[date] === undefined) {
+          restoreBackersChart(this)
           return
         }
 
@@ -320,6 +325,7 @@
         const previousDate = this.data.labels[e._index - 1]
 
         if (dataMart[date] === undefined) {
+          restoreFundraisingChart(this)
           return
         }
 
