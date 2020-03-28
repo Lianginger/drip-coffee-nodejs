@@ -32,14 +32,18 @@
 </div>
 
 <script>
-  const rawData = {{ data.timeline }}
-  const projectFinishedAt = new Date('{{ data.finished_at }}').getTime() / 1000
-  rawData.sort((a, b) => a[0] - b[0])
-  const year = moment(rawData[0][0] * 1000).format('YYYY')
+  const rawData = {{{ json data }}}
+  const timeline = JSON.parse(rawData.timeline)
+  let projectStartAt = new Date(rawData.started_at).getTime() / 1000
+  let projectFinishAt = new Date(rawData.finished_at).getTime() / 1000
+  // Minus one hour to get the zero data.
+  projectStartAt = projectStartAt - 60 * 60
+  timeline.sort((a, b) => a[0] - b[0])
+  const year = moment(timeline[0][0] * 1000).format('YYYY')
 
   const dataMart = {}
-  rawData.map(data => {
-    if (data[0] > projectFinishedAt) return
+  timeline.map(data => {
+    if (data[0] < projectStartAt || data[0] > projectFinishAt) return
 
     const date = moment(new Date(data[0] * 1000)).format('YYYY/MM/DD')
     data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
