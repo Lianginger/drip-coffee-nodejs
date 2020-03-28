@@ -34,8 +34,9 @@
 <script>
   const rawData = {{{ json data }}}
   const timeline = JSON.parse(rawData.timeline)
-  let projectStartAt = new Date(rawData.started_at).getTime() / 1000
-  let projectFinishAt = new Date(rawData.finished_at).getTime() / 1000
+  // Add datetime.slice(0,-1) to cut the denoted by the suffix "Z"
+  let projectStartAt = new Date(rawData.started_at.slice(0, -1)).getTime() / 1000
+  let projectFinishAt = new Date(rawData.finished_at.slice(0, -1)).getTime() / 1000
   // Minus one hour to get the zero data.
   projectStartAt = projectStartAt - 60 * 60
   timeline.sort((a, b) => a[0] - b[0])
