@@ -6,7 +6,9 @@ const app = express()
 const bodyParser = require('body-parser')
 const port = process.env.PORT || 3000
 const exphbs = require('express-handlebars')
+const cors = require('cors')
 
+app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.engine('handlebars', exphbs())
