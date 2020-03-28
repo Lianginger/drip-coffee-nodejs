@@ -5,8 +5,9 @@ const Project = function() {}
 Project.findById = ({ platformId, projectId }, result) => {
   sql.query(
     `
-    SELECT * FROM funding_timeline
-    WHERE source = ${platformId} && source_id = '${projectId}'
+    SELECT * FROM crowdfunding.funding_timeline
+    JOIN crowdfunding.fundings on crowdfunding.funding_timeline.source = crowdfunding.fundings.source and crowdfunding.funding_timeline.source_id = crowdfunding.fundings.source_id
+    WHERE crowdfunding.funding_timeline.source = ${platformId} && crowdfunding.funding_timeline.source_id = '${projectId}';
     `,
     (err, res) => {
       if (err) {

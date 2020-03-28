@@ -33,11 +33,14 @@
 
 <script>
   const rawData = {{ data.timeline }}
+  const projectFinishedAt = new Date('{{ data.finished_at }}').getTime() / 1000
   rawData.sort((a, b) => a[0] - b[0])
   const year = moment(rawData[0][0] * 1000).format('YYYY')
 
   const dataMart = {}
   rawData.map(data => {
+    if (data[0] > projectFinishedAt) return
+
     const date = moment(new Date(data[0] * 1000)).format('YYYY/MM/DD')
     data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
     dataMart[date] ? dataMart[date].push(data) : dataMart[date] = [data]
