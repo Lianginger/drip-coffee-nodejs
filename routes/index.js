@@ -7,5 +7,6 @@ router.get('/', (req, res) => {
 })
 
 router.get('/platform/:platformId/projects/:projectId', Projects.findOne)
+router.get('/privacy', (req, res) => res.render('privacy'))
 
 module.exports = router
