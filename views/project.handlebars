@@ -1,0 +1,390 @@
+<div style="margin: 0 1em">
+  <ul class="nav" id="myTab" role="tablist">
+    <li class="nav-item">
+      <img src="https://storage.googleapis.com/mixin-dashboard/drip-extension-logo.png" alt="logo"
+        style="display:inline-block; padding: 0.5em; height: 2.5em;">
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" id="fundRaise-tab" data-toggle="tab" href="#fundRaise" role="tab"
+        aria-controls="fundRaise" aria-selected="false">贊助金額</a>
+      <span class="checkmark"></span>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="backer-tab" data-toggle="tab" href="#backer" role="tab" aria-controls="backer"
+        aria-selected="true">贊助人數</a>
+      <span class="checkmark"></span>
+    </li>
+  </ul>
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="fundRaise" role="tabpanel" aria-labelledby="fundRaise-tab"
+      style="position: relative; height:450px;">
+      <canvas id="fundRaiseChart"></canvas>
+    </div>
+    <div class="tab-pane fade" id="backer" role="tabpanel" aria-labelledby="backer-tab"
+      style="position: relative; height:450px;">
+      <canvas id="backerChart"></canvas>
+    </div>
+  </div>
+  <div class="text-center text-secondary">
+    <p>點擊每日資料點，將展開當天完整 24 小時數據；點擊任意空白方格，即可返回每日圖表</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"
+  integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+<script src="https://npmcdn.com/chart.js@2.9.3/dist/Chart.bundle.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+  integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+  integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+  integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+<script>
+  const rawData = {{{ json data }}}
+  const timeline = JSON.parse(rawData.timeline)
+  // Add datetime.slice(0,-1) to cut the denoted by the suffix "Z"
+  let projectStartAt = new Date(rawData.started_at.slice(0, -1)).getTime() / 1000
+  let projectFinishAt = new Date(rawData.finished_at.slice(0, -1)).getTime() / 1000
+  // Minus one hour to get the zero data.
+  projectStartAt = projectStartAt - 60 * 60
+  timeline.sort((a, b) => a[0] - b[0])
+  const year = moment(timeline[0][0] * 1000).format('YYYY')
+
+  const dataMart = {}
+  timeline.map(data => {
+    if (data[0] < projectStartAt || data[0] > projectFinishAt) return
+
+    const date = moment(new Date(data[0] * 1000)).format('YYYY/MM/DD')
+    data[0] = moment(new Date(data[0] * 1000)).format('HH:MM')
+    dataMart[date] ? dataMart[date].push(data) : dataMart[date] = [data]
+  })
+  // console.log(dataMart)
+
+  const dateRange = Object.keys(dataMart)
+  const chartTitle = `${dateRange[0]} - ${dateRange[dateRange.length - 1]} ( ${dateRange.length}日 )`
+  const dailyData = Object.values(dataMart)
+  const length = dateRange.length
+
+  const cumulativeBackersData = []
+  const dailyBackersData = []
+  const cumulativeFundraisingData = []
+  const dailyFundraisingData = []
+  for (let i = 0; i < length; i++) {
+    const previousData = i ? dailyData[i - 1] : [[0, 0, 0]]
+    const data = dailyData[i]
+    cumulativeBackersData.push(data[data.length - 1][1])
+    dailyBackersData.push(data[data.length - 1][1] - previousData[previousData.length - 1][1])
+    cumulativeFundraisingData.push(data[data.length - 1][2])
+    dailyFundraisingData.push(data[data.length - 1][2] - previousData[previousData.length - 1][2])
+  }
+
+  // ChartJS start
+  Chart.Tooltip.positioners.bottom = function (elements, eventPosition) {
+    return {
+      x: elements[0]._model.x,
+      y: 380,
+    }
+  }
+  // Global chart config options
+  const chartConfigOptions = {
+    hover: {
+      intersect: false
+    },
+    layout: {
+      padding: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 60
+      }
+    },
+    title: {
+      display: true,
+      fontSize: 16,
+      fontStyle: 'normal',
+      text: chartTitle,
+      position: 'top'
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    legend: {
+      display: false,
+      labels: {
+        usePointStyle: true
+      }
+    },
+    tooltips: {
+      mode: 'index',
+      intersect: false,
+      titleFontStyle: 'normal',
+      titleAlign: 'center',
+      position: 'bottom',
+      xPadding: 19,
+      yPadding: 8,
+      yAlign: 'top',
+      xAlign: 'center',
+      cornerRadius: 5,
+      callbacks: {
+        /* title: function (tooltipItem, data) {
+          return tooltipItem[0].xLabel
+        }, */
+        label: function (tooltipItem, data) {
+          return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        }
+      }
+    },
+  }
+  const chartConfigOptionsScalesXAxes = [{
+    barThickness: 6,
+    gridLines: {
+      zeroLineWidth: 1,
+      zeroLineColor: "#FF48CC",
+      z: 1000000
+    },
+    ticks: {
+      callback: function (value, index, values) {
+        // 判斷 x 軸的資料是否為日期，是日期會在 dataMart 找的到
+        // 若找不到，就是 24 小時資料
+        if (dataMart[value] === undefined) {
+          return value
+        }
+        return value.slice(5);
+      }
+    }
+  }]
+
+  const backer = document.getElementById('backerChart').getContext('2d')
+  const brandGradient = backer.createLinearGradient(0, 0, 0, 350)
+  brandGradient.addColorStop(0.4, "#FFB819")
+  brandGradient.addColorStop(0.8, "#FF48CC")
+  const backerChart = new Chart(backer, {
+    // The type of chart we want to create
+    type: 'bar',
+    // The data for our dataset
+    data: {
+      labels: dateRange,
+      datasets: [{
+        type: 'line',
+        yAxisID: 'y-axis-1',
+        label: '累積人數',
+        backgroundColor: 'rgba(139, 133, 124, 0.1)',
+        borderColor: '#8B857C',
+        borderWidth: 1,
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+        pointBorderColor: 'rgba(0, 0, 0, 0)',
+        pointHoverBorderColor: '#8B857C',
+        data: cumulativeBackersData
+      },
+      {
+        type: 'bar',
+        yAxisID: 'y-axis-2',
+        label: '增加人數',
+        backgroundColor: brandGradient,
+        data: dailyBackersData
+      }]
+    },
+
+    // Configuration options go here
+    options: {
+      ...chartConfigOptions,
+      scales: {
+        yAxes: [
+          {
+            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+            display: true,
+            position: 'right',
+            id: 'y-axis-1',
+            scaleLabel: {
+              display: true,
+              labelString: '累積人數'
+            },
+            ticks: {
+              beginAtZero: true,
+              // Include a dollar sign in the ticks
+              callback: function (value, index, values) {
+                return numeral(value).format('0,0 a');
+              }
+            }
+          },
+          {
+            type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+            display: true,
+            position: 'left',
+            id: 'y-axis-2',
+            gridLines: {
+              drawOnChartArea: false
+            },
+            scaleLabel: {
+              display: true,
+              labelString: '增加人數'
+            },
+            ticks: {
+              beginAtZero: true,
+              // Include a dollar sign in the ticks
+              callback: function (value, index, values) {
+                return numeral(value).format('0,0 a');
+              }
+            }
+          }
+        ],
+        xAxes: chartConfigOptionsScalesXAxes
+      },
+      onClick: function (c, i) {
+        e = i[0];
+
+        if (e === undefined) {
+          restoreBackersChart(this)
+          return
+        }
+
+        var x_value = this.data.labels[e._index]
+        // var y_value = this.data.datasets[0].data[e._index]
+        const date = x_value
+        const previousDate = this.data.labels[e._index - 1]
+
+        if (dataMart[date] === undefined) {
+          restoreBackersChart(this)
+          return
+        }
+
+        const hourLabel = dataMart[date].map(item => item[0].slice(0, 2))
+        const cumulativeHourData = dataMart[date].map(item => item[1])
+        const previousDateLastData = dataMart[previousDate] ? dataMart[previousDate][dataMart[previousDate].length - 1][1] : 0
+        showDataInOneDay(this, date, hourLabel, cumulativeHourData, previousDateLastData)
+      }
+    }
+  })
+
+  const fundRaise = document.getElementById('fundRaiseChart').getContext('2d')
+  const fundRaiseChart = new Chart(fundRaise, {
+    // The type of chart we want to create
+    type: 'bar',
+
+    // The data for our dataset
+    data: {
+      labels: dateRange,
+      datasets: [{
+        type: 'line',
+        yAxisID: 'y-axis-1',
+        label: '累積金額',
+        backgroundColor: 'rgba(139, 133, 124, 0.1)',
+        borderColor: '#8B857C',
+        borderWidth: 1,
+        pointBackgroundColor: 'rgba(0, 0, 0, 0)',
+        pointBorderColor: 'rgba(0, 0, 0, 0)',
+        pointHoverBorderColor: '#8B857C',
+        data: cumulativeFundraisingData
+      },
+      {
+        type: 'bar',
+        yAxisID: 'y-axis-2',
+        label: '增加金額',
+        backgroundColor: brandGradient,
+        data: dailyFundraisingData
+      }
+      ]
+    },
+
+    // Configuration options go here
+    options: {
+      ...chartConfigOptions,
+      scales: {
+        yAxes: [{
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'right',
+          id: 'y-axis-1',
+          scaleLabel: {
+            display: true,
+            labelString: '累積金額'
+          },
+          ticks: {
+            beginAtZero: true,
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return '$' + numeral(value).format('0,0 a');
+            }
+          }
+        }, {
+          type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+          display: true,
+          position: 'left',
+          id: 'y-axis-2',
+          gridLines: {
+            drawOnChartArea: false
+          },
+          scaleLabel: {
+            display: true,
+            labelString: '增加金額'
+          },
+          ticks: {
+            beginAtZero: true,
+            // Include a dollar sign in the ticks
+            callback: function (value, index, values) {
+              return '$' + numeral(value).format('0,0 a');
+            }
+          }
+        }],
+        xAxes: chartConfigOptionsScalesXAxes
+      },
+      onClick: function (c, i) {
+        e = i[0];
+
+        if (e === undefined) {
+          restoreFundraisingChart(this)
+          return
+        }
+
+        var x_value = this.data.labels[e._index]
+        // var y_value = this.data.datasets[0].data[e._index]
+        const date = x_value
+        const previousDate = this.data.labels[e._index - 1]
+
+        if (dataMart[date] === undefined) {
+          restoreFundraisingChart(this)
+          return
+        }
+
+        const hourLabel = dataMart[date].map(item => item[0].slice(0, 2))
+        const cumulativeHourData = dataMart[date].map(item => item[2])
+        const previousDateLastData = dataMart[previousDate] ? dataMart[previousDate][dataMart[previousDate].length - 1][2] : 0
+        showDataInOneDay(this, date, hourLabel, cumulativeHourData, previousDateLastData)
+      }
+    }
+  })
+
+  function showDataInOneDay(chart, date, hourLabel, cumulativeHourData, previousDateLastData) {
+    chart.options.title.text = date
+    chart.data.labels = hourLabel
+    chart.data.datasets[0].data = cumulativeHourData
+    const hourlyData = cumulativeHourData.map((data, index, dataSet) => {
+      return data - (index ? dataSet[index - 1] : previousDateLastData)
+    })
+    chart.data.datasets[1].data = hourlyData
+    chart.update({
+      duration: 0
+    })
+  }
+
+  function restoreFundraisingChart(chart) {
+    chart.options.title.text = chartTitle
+    chart.data.labels = dateRange
+    chart.data.datasets[0].data = cumulativeFundraisingData
+    chart.data.datasets[1].data = dailyFundraisingData
+    chart.update({
+      duration: 0
+    })
+  }
+
+  function restoreBackersChart(chart) {
+    chart.options.title.text = chartTitle
+    chart.data.labels = dateRange
+    chart.data.datasets[0].data = cumulativeBackersData
+    chart.data.datasets[1].data = dailyBackersData
+    chart.update({
+      duration: 0
+    })
+  }
+</script>

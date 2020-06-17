@@ -17,7 +17,7 @@ exports.findOne = (req, res) => {
             message: 'Error retrieving project with id ' + req.params.projectId,
           })
         }
-      } else res.render('home', { data })
+      } else res.render('project', { data })
     }
   )
 }
