@@ -1,4 +1,7 @@
 const Project = require('../models/project')
+const JSEncrypt = require('node-jsencrypt')
+const decrypt = new JSEncrypt()
+decrypt.setPrivateKey(process.env.RSA_PRIVATE_KEY)
 
 exports.findOne = (req, res) => {
   Project.findById(
@@ -42,4 +45,12 @@ exports.findOneAPI = (req, res) => {
       } else res.json(data)
     }
   )
+}
+
+exports.decryptURL = (req, res) => {
+  let encryptedURL = req.params.encryptedURL
+  encryptedURL = encryptedURL.replace(/_/gi, '/')
+
+  const decryptedURL = decrypt.decrypt(encryptedURL)
+  res.redirect(`/${decryptedURL}`)
 }
