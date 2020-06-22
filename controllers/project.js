@@ -1,7 +1,12 @@
 const Project = require('../models/project')
 const JSEncrypt = require('node-jsencrypt')
 const decrypt = new JSEncrypt()
-decrypt.setPrivateKey(process.env.RSA_PRIVATE_KEY)
+
+let privateKey = ''
+new String(process.env.RSA_PRIVATE_KEY).split(/\\n/).forEach((item) => {
+  privateKey += `${item}\n`
+})
+decrypt.setPrivateKey(privateKey)
 
 exports.findOne = (req, res) => {
   Project.findById(
