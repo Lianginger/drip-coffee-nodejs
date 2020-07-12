@@ -49,8 +49,14 @@
   let projectFinishAt = new Date(rawData.finished_at.slice(0, -1)).getTime() / 1000
   // Minus one hour to get the zero data.
   projectStartAt = projectStartAt - 60 * 60
+  // Add one hour to get last data
+  projectFinishAt = projectFinishAt + 60 * 60
   timeline.sort((a, b) => a[0] - b[0])
   const year = moment(timeline[0][0] * 1000).format('YYYY')
+
+  // 因為匯款部分有時間差，現在已經結束的專案，後來新爬了一筆最新的數字
+  // 取得最後一筆更新數據
+  const lastData = timeline[timeline.length - 1]
 
   const dataMart = {}
   timeline.map(data => {
@@ -66,6 +72,11 @@
   const chartTitle = `${dateRange[0]} - ${dateRange[dateRange.length - 1]} ( ${dateRange.length}日 )`
   const dailyData = Object.values(dataMart)
   const length = dateRange.length
+
+  // dailyData 最後一筆資料的贊助人數、集資金額更新為 lastData
+  const lastDateData = dailyData[dailyData.length -1]
+  dailyData[dailyData.length -1][lastDateData.length -1][1] = lastData[1]
+  dailyData[dailyData.length -1][lastDateData.length -1][2] = lastData[2]
 
   const cumulativeBackersData = []
   const dailyBackersData = []
