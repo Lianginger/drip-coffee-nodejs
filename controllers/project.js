@@ -52,6 +52,11 @@ exports.findOneAPI = (req, res) => {
   )
 }
 
+exports.getZeczecStatus = (req, res) => {
+  const zeczecStatus = Project.getZeczecStatus()
+  res.render('zeczecStatus', { zeczecStatusList: [...zeczecStatus].reverse() })
+}
+
 exports.decryptURL = (req, res) => {
   let encryptedURL = req.params.encryptedURL
   encryptedURL = encryptedURL.replace(/_/gi, '/')

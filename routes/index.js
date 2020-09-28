@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const Projects = require('../controllers/project')
+const Project = require('../models/project')
 
 router.get('/', (req, res) => res.render('home'))
 router.get('/privacy', (req, res) => res.render('privacy'))
+router.get('/zeczec-status', Projects.getZeczecStatus)
 
 router.get('/:encryptedURL', Projects.decryptURL)
 router.get('/platform/:platformId/projects/:projectId', Projects.findOne)
