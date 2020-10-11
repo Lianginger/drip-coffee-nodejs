@@ -94,7 +94,7 @@ Project.storeCrawlerStatus = (platformId, status) => {
   platform.numberOfNoLatestDataProject = status.numberOfNoLatestDataProject
 
   const length = platform.records.length
-  if (length > 2) {
+  if (length > 3) {
     platform.records.shift()
   }
   platform.records.push(status)
@@ -175,6 +175,7 @@ async function getCrawlerStatusByPlatformId(platformId) {
 
   const diff = process.hrtime(time)
   return {
+    platformId,
     localDateTime,
     dateTimeToCheck,
     numberOfLiveProject,

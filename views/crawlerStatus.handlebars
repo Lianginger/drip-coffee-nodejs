@@ -43,18 +43,20 @@
                 <th scope="row"><span class="badge badge-light">{{this.dateTimeToCheck}}</span></th>
                 <td><span class="badge badge-pill badge-light">{{this.numberOfLiveProject}}</span></td>
                 <td><span class="badge badge-pill badge-success">{{this.numberOfPassedProject}}</span></td>
-                <td><span
-                    class="badge badge-pill badge-warning">{{this.numberOfNotFoundProject}}</span>{{#each this.notFoundProjects}},<a
-                    target="_blank" href="{{this.pageUrl}}" class="badge badge-warning">{{this.projectId}}</a>{{/each}}
+                <td><span class="badge badge-pill badge-warning js-problem-project-badge"
+                    data-platform-id="{{this.platformId}}" data-problem-type="not-found"
+                    data-number-of-problem-project="{{this.numberOfNotFoundProject}}"
+                    style="cursor: pointer;">{{this.numberOfNotFoundProject}}</span>
                 </td>
-                <td><span
-                    class="badge badge-pill badge-secondary">{{this.numberOfClosedProject}}</span>{{#each this.closedProjects}},<a
-                    target="_blank" href="{{this.pageUrl}}"
-                    class="badge badge-secondary">{{this.projectId}}</a>{{/each}}
+                <td><span class="badge badge-pill badge-secondary js-problem-project-badge"
+                    data-platform-id="{{this.platformId}}" data-problem-type="closed"
+                    data-number-of-problem-project="{{this.numberOfClosedProject}}"
+                    style="cursor: pointer;">{{this.numberOfClosedProject}}</span>
                 </td>
-                <td><span
-                    class="badge badge-pill badge-danger">{{this.numberOfNoLatestDataProject}}</span>{{#each this.noLatestDataProjects}},<a
-                    target="_blank" href="{{this.pageUrl}}" class="badge badge-danger">{{this.projectId}}</a>{{/each}}
+                <td><span class="badge badge-pill badge-danger js-problem-project-badge"
+                    data-platform-id="{{this.platformId}}" data-problem-type="no-latest-data"
+                    data-number-of-problem-project="{{this.numberOfNoLatestDataProject}}"
+                    style="cursor: pointer;">{{this.numberOfNoLatestDataProject}}</span>
                 </td>
                 <td>
                   {{this.timeSpend}}
@@ -68,6 +70,22 @@
     </section>
     {{/each}}
   </div>
+  <!-- Modal -->
+  <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title font-weight-bold" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 <!-- JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
@@ -76,3 +94,73 @@
   integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
   integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<script>
+  const platformCrawlerStatusList = {{{ json crawlerStatus }}}
+  const modalBody = document.querySelector('.modal-body')
+  const modalTitle = document.querySelector('.modal-title')
+  const problemProjectBadges = document.querySelectorAll('.js-problem-project-badge')
+  problemProjectBadges.forEach(element => {
+    element.addEventListener('click', function () {
+      const platformId = this.dataset.platformId
+      const problemType = this.dataset.problemType
+      const numberOfProblemProject = Number(this.dataset.numberOfProblemProject)
+
+      if (numberOfProblemProject === 0) {
+        return
+      }
+
+
+      const platform = platformCrawlerStatusList.find(crawlerStatus => crawlerStatus.platformId === platformId)
+      const problemProjectList = getProblemProjectList(platform, problemType)
+      const problemProjectHTML = getProblemProjectHTML(problemProjectList, problemType)
+      const modalTitleText = getModalTitleText(platform, problemType)
+      modalBody.innerHTML = problemProjectHTML
+      modalTitle.innerHTML = modalTitleText
+      $('#modal').modal('show')
+    })
+  })
+
+  function getProblemProjectList(platform, problemType) {
+    const lastIndex = platform.records.length ? platform.records.length - 1 : 0
+
+    if (problemType === 'not-found') {
+      return platform.records[lastIndex].notFoundProjects
+    } else if (problemType === 'closed') {
+      return platform.records[lastIndex].closedProjects
+    } else if (problemType === 'no-latest-data') {
+      return platform.records[lastIndex].noLatestDataProjects
+    } else {
+      return []
+    }
+  }
+
+  function getProblemProjectHTML(problemProjectList, problemType) {
+    let badgeType = ''
+    if (problemType === 'not-found') {
+      badgeType = 'badge-warning'
+    } else if (problemType === 'closed') {
+      badgeType = 'badge-secondary'
+    } else if (problemType === 'no-latest-data') {
+      badgeType = 'badge-danger'
+    }
+
+    let problemProjectHTML = ''
+    problemProjectList.forEach(project => {
+      problemProjectHTML += `<a
+                    target="_blank" href="${project.pageUrl}" class="badge ${badgeType}">${project.projectId}</a>,`
+    })
+    return problemProjectHTML
+  }
+
+  function getModalTitleText(platform, problemType) {
+    if (problemType === 'not-found') {
+      return `${platform.platformTitle} 找不到`
+    } else if (problemType === 'closed') {
+      return `${platform.platformTitle} 已結束`
+    } else if (problemType === 'no-latest-data') {
+      return `${platform.platformTitle} 有問題`
+    } else {
+      return ''
+    }
+  }
+</script>
