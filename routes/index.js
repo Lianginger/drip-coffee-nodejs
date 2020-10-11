@@ -5,7 +5,7 @@ const Project = require('../models/project')
 
 router.get('/', (req, res) => res.render('home'))
 router.get('/privacy', (req, res) => res.render('privacy'))
-router.get('/zeczec-status', Projects.getZeczecStatus)
+router.get('/crawler-status', Projects.getCrawlerStatus)
 
 router.get('/:encryptedURL', Projects.decryptURL)
 router.get('/platform/:platformId/projects/:projectId', Projects.findOne)

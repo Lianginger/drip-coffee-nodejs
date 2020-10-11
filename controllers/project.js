@@ -52,9 +52,12 @@ exports.findOneAPI = (req, res) => {
   )
 }
 
-exports.getZeczecStatus = (req, res) => {
-  const zeczecStatus = Project.getZeczecStatus()
-  res.render('zeczecStatus', { zeczecStatusList: [...zeczecStatus].reverse() })
+exports.getCrawlerStatus = (req, res) => {
+  const crawlerStatus = Project.getCrawlerStatus()
+  // console.log(crawlerStatus)
+  res.render('crawlerStatus', {
+    crawlerStatus,
+  })
 }
 
 exports.decryptURL = (req, res) => {

@@ -30,13 +30,13 @@ app.use('/', require('./routes/index'))
 new CronJob(
   '0 0 0,6,12,18 * * *',
   function () {
-    Project.checkZeczecStatus()
+    Project.checkCrawlerStatus()
   },
   null,
   true,
   'Asia/Taipei'
 )
-Project.checkZeczecStatus()
+Project.checkCrawlerStatus()
 
 app.listen(port, () => {
   console.log(`Express listening on port ${port}`)
