@@ -119,16 +119,29 @@ async function getCrawlerStatusByPlatformId(platformId) {
     .replace('T', ' ')
   // console.log('localDateTime:', localDateTime)
 
-  // 檢查過去 2 小時那個時間點
-  const pastTimeShift = 3 * 60 * 60 * 1000
-  const dateTimeToCheck = new Date(now + localTimeShift - pastTimeShift)
+  // 檢查過去 3 小時、過去 24 小時時間點
+  const timeShift3hour = 3 * 60 * 60 * 1000
+  const timeShift24hour = 24 * 60 * 60 * 1000
+  const dateTimeToCheck3HoursBefore = new Date(
+    now + localTimeShift - timeShift3hour
+  )
     .toISOString()
     .split('.')[0]
     .replace('T', ' ')
-  // console.log('dateTimeToCheck:', dateTimeToCheck)
+  const dateTimeToCheck24HoursBefore = new Date(
+    now + localTimeShift - timeShift24hour
+  )
+    .toISOString()
+    .split('.')[0]
+    .replace('T', ' ')
+  // console.log('dateTimeToCheck3HoursBefore:', dateTimeToCheck3HoursBefore)
 
   const problemProjects = []
+  const passedProjects = []
   allLiveProject.forEach((project) => {
+    // hotProject: 1 小時爬一次資料
+    // passedProject: 24 小時爬一次資料
+    const hotProjectOnlyPlatformIdList = [3, 4, 6, 7]
     const timelineJSON = JSON.parse(project.timeline)
     timeStampList = timelineJSON.map((data) => data[0])
     const latestTimeStamp = Math.max(...timeStampList) * 1000
@@ -137,20 +150,35 @@ async function getCrawlerStatusByPlatformId(platformId) {
       .split('.')[0]
       .replace('T', ' ')
 
-    if (new Date(latestDateTime) < new Date(dateTimeToCheck)) {
+    if (new Date(latestDateTime) < new Date(dateTimeToCheck24HoursBefore)) {
       problemProjects.push(project)
+    } else if (
+      new Date(latestDateTime) < new Date(dateTimeToCheck3HoursBefore) &&
+      hotProjectOnlyPlatformIdList.includes(platformId)
+    ) {
+      problemProjects.push(project)
+    } else if (
+      new Date(latestDateTime) < new Date(dateTimeToCheck3HoursBefore)
+    ) {
+      passedProjects.push({
+        pageUrl: project.page_url,
+        projectId: project.source_id,
+      })
     }
   })
 
   const numberOfProblemProject = problemProjects.length
-  const numberOfPassedProject = numberOfLiveProject - numberOfProblemProject
+  const numberOfPassedProject = passedProjects.length
+  const numberOfHotProject =
+    numberOfLiveProject - numberOfProblemProject - numberOfPassedProject
+
   const notFoundProjects = []
   const closedProjects = []
   const noLatestDataProjects = []
 
   for (let i = 0; i < numberOfProblemProject; i++) {
     const project = problemProjects[i]
-    await sleep(300)
+
     const projectStatus = await getProjectStatus(platformId, project.source_id)
 
     if (projectStatus === PROJECT_NOT_FOUND) {
@@ -177,9 +205,10 @@ async function getCrawlerStatusByPlatformId(platformId) {
   return {
     platformId,
     localDateTime,
-    dateTimeToCheck,
     numberOfLiveProject,
+    numberOfHotProject,
     numberOfPassedProject,
+    passedProjects,
     numberOfProblemProject,
     numberOfNotFoundProject: notFoundProjects.length,
     notFoundProjects,
@@ -202,7 +231,8 @@ function getProjectStatus(platformId, projectId) {
       resolve(PROJECT_NO_LATEST_DATA)
     }),
     // zeczec
-    3: new Promise((resolve, reject) => {
+    3: new Promise(async (resolve, reject) => {
+      await sleep(300)
       request(
         {
           url: `https://www.zeczec.com/projects/${projectId}`,

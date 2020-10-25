@@ -53,7 +53,11 @@ exports.findOneAPI = (req, res) => {
 }
 
 exports.getCrawlerStatus = (req, res) => {
-  const crawlerStatus = Project.getCrawlerStatus()
+  const crawlerPlatformList = Project.getCrawlerStatus()
+  const crawlerStatus = [...crawlerPlatformList].map((platform) => {
+    platform.records.reverse()
+    return platform
+  })
   // console.log(crawlerStatus)
   res.render('crawlerStatus', {
     crawlerStatus,

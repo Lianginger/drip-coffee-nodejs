@@ -9,13 +9,13 @@
           {{this.platformTitle}}</h4>
         {{#if this.numberOfNoLatestDataProject}}
         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-x-circle-fill mx-3" fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg" style="color: red;">
+          xmlns="http://www.w3.org/2000/svg" style="color: #dc3545;">
           <path fill-rule="evenodd"
             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
         </svg>
         {{else}}
         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-check-circle-fill mx-3" fill="currentColor"
-          xmlns="http://www.w3.org/2000/svg" style="color: green;">
+          xmlns="http://www.w3.org/2000/svg" style="color: #007bff;">
           <path fill-rule="evenodd"
             d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
         </svg>
@@ -24,39 +24,59 @@
       </div>
 
       <div class="card collapse" id="platform-{{platformId}}">
-        <div class="card-body">
+        <div class="card-body" style="overflow-x: scroll; ">
           <table class="table">
             <thead>
               <tr style="white-space: nowrap;">
                 <th scope="col">檢查時間點</th>
                 <th scope="col">總在線專案</th>
-                <th scope="col">通過</th>
-                <th scope="col">找不到</th>
-                <th scope="col">已結束</th>
-                <th scope="col">有問題</th>
+                <th scope="col">熱門專案<svg width="1em" height="1em" viewBox="0 0 16 16"
+                    class="bi bi-info-circle-fill mx-1" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+                    data-toggle="tooltip" title="每 1 小時爬一次資料">
+                    <path fill-rule="evenodd"
+                      d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                  </svg></th>
+                <th scope="col">非熱門專案<svg width="1em" height="1em" viewBox="0 0 16 16"
+                    class="bi bi-info-circle-fill mx-1" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+                    data-toggle="tooltip" title="每 24 小時爬一次資料">
+                    <path fill-rule="evenodd"
+                      d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                  </svg></th>
+                <th scope="col">專案找不到</th>
+                <th scope="col">專案已結束</th>
+                <th scope="col">專案有問題</th>
                 <th scope="col">耗時(秒)</th>
               </tr>
             </thead>
             <tbody>
               {{#each this.records}}
               <tr>
-                <th scope="row"><span class="badge badge-light">{{this.dateTimeToCheck}}</span></th>
-                <td><span class="badge badge-pill badge-light">{{this.numberOfLiveProject}}</span></td>
-                <td><span class="badge badge-pill badge-success">{{this.numberOfPassedProject}}</span></td>
-                <td><span class="badge badge-pill badge-warning js-problem-project-badge"
-                    data-platform-id="{{this.platformId}}" data-problem-type="not-found"
-                    data-number-of-problem-project="{{this.numberOfNotFoundProject}}"
-                    style="cursor: pointer;">{{this.numberOfNotFoundProject}}</span>
+                <th scope="row"><span class="badge badge-light">{{this.localDateTime}}</span></th>
+                <td>{{#if numberOfLiveProject}}<span
+                    class="badge badge-pill badge-light">{{this.numberOfLiveProject}}</span>{{/if}}</td>
+                <td>{{#if numberOfHotProject}}<span
+                    class="badge badge-pill badge-primary">{{this.numberOfHotProject}}</span>{{/if}}</td>
+                <td>{{#if numberOfPassedProject}}<span class="badge badge-pill badge-info js-expandable-project-badge"
+                    data-platform-id="{{this.platformId}}" data-project-type="passed"
+                    data-number-of-project="{{this.numberOfPassedProject}}"
+                    style="cursor: pointer;">{{this.numberOfPassedProject}}</span>{{/if}}</td>
+                <td>{{#if numberOfNotFoundProject}}<span
+                    class="badge badge-pill badge-warning js-expandable-project-badge"
+                    data-platform-id="{{this.platformId}}" data-project-type="not-found"
+                    data-number-of-project="{{this.numberOfNotFoundProject}}"
+                    style="cursor: pointer;">{{this.numberOfNotFoundProject}}</span>{{/if}}
                 </td>
-                <td><span class="badge badge-pill badge-secondary js-problem-project-badge"
-                    data-platform-id="{{this.platformId}}" data-problem-type="closed"
-                    data-number-of-problem-project="{{this.numberOfClosedProject}}"
-                    style="cursor: pointer;">{{this.numberOfClosedProject}}</span>
+                <td>{{#if numberOfClosedProject}}<span
+                    class="badge badge-pill badge-secondary js-expandable-project-badge"
+                    data-platform-id="{{this.platformId}}" data-project-type="closed"
+                    data-number-of-project="{{this.numberOfClosedProject}}"
+                    style="cursor: pointer;">{{this.numberOfClosedProject}}</span>{{/if}}
                 </td>
-                <td><span class="badge badge-pill badge-danger js-problem-project-badge"
-                    data-platform-id="{{this.platformId}}" data-problem-type="no-latest-data"
-                    data-number-of-problem-project="{{this.numberOfNoLatestDataProject}}"
-                    style="cursor: pointer;">{{this.numberOfNoLatestDataProject}}</span>
+                <td>{{#if numberOfNoLatestDataProject}}<span
+                    class="badge badge-pill badge-danger js-expandable-project-badge"
+                    data-platform-id="{{this.platformId}}" data-project-type="no-latest-data"
+                    data-number-of-project="{{this.numberOfNoLatestDataProject}}"
+                    style="cursor: pointer;">{{this.numberOfNoLatestDataProject}}</span>{{/if}}
                 </td>
                 <td>
                   {{this.timeSpend}}
@@ -95,70 +115,79 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
   integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 <script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
   const platformCrawlerStatusList = {{{ json crawlerStatus }}}
   const modalBody = document.querySelector('.modal-body')
   const modalTitle = document.querySelector('.modal-title')
-  const problemProjectBadges = document.querySelectorAll('.js-problem-project-badge')
+  const problemProjectBadges = document.querySelectorAll('.js-expandable-project-badge')
   problemProjectBadges.forEach(element => {
     element.addEventListener('click', function () {
       const platformId = this.dataset.platformId
-      const problemType = this.dataset.problemType
-      const numberOfProblemProject = Number(this.dataset.numberOfProblemProject)
+      const projectType = this.dataset.projectType
+      const numberOfProject = Number(this.dataset.numberOfProject)
 
-      if (numberOfProblemProject === 0) {
+      if (numberOfProject === 0) {
         return
       }
 
 
       const platform = platformCrawlerStatusList.find(crawlerStatus => crawlerStatus.platformId === platformId)
-      const problemProjectList = getProblemProjectList(platform, problemType)
-      const problemProjectHTML = getProblemProjectHTML(problemProjectList, problemType)
-      const modalTitleText = getModalTitleText(platform, problemType)
-      modalBody.innerHTML = problemProjectHTML
+      const projectList = getProjectList(platform, projectType)
+      const projectHTML = getProjectHTML(projectList, projectType)
+      const modalTitleText = getModalTitleText(platform, projectType)
+      modalBody.innerHTML = projectHTML
       modalTitle.innerHTML = modalTitleText
       $('#modal').modal('show')
     })
   })
 
-  function getProblemProjectList(platform, problemType) {
+  function getProjectList(platform, projectType) {
     const lastIndex = platform.records.length ? platform.records.length - 1 : 0
 
-    if (problemType === 'not-found') {
+    if (projectType === 'not-found') {
       return platform.records[lastIndex].notFoundProjects
-    } else if (problemType === 'closed') {
+    } else if (projectType === 'closed') {
       return platform.records[lastIndex].closedProjects
-    } else if (problemType === 'no-latest-data') {
+    } else if (projectType === 'no-latest-data') {
       return platform.records[lastIndex].noLatestDataProjects
+    } else if (projectType === 'passed') {
+      return platform.records[lastIndex].passedProjects
     } else {
       return []
     }
   }
 
-  function getProblemProjectHTML(problemProjectList, problemType) {
+  function getProjectHTML(projectList, projectType) {
     let badgeType = ''
-    if (problemType === 'not-found') {
+    if (projectType === 'not-found') {
       badgeType = 'badge-warning'
-    } else if (problemType === 'closed') {
+    } else if (projectType === 'closed') {
       badgeType = 'badge-secondary'
-    } else if (problemType === 'no-latest-data') {
+    } else if (projectType === 'no-latest-data') {
       badgeType = 'badge-danger'
+    } else if (projectType === 'passed') {
+      badgeType = 'badge-info'
     }
 
-    let problemProjectHTML = ''
-    problemProjectList.forEach(project => {
-      problemProjectHTML += `<a
+    let projectHTML = ''
+    projectList.forEach(project => {
+      projectHTML += `<a
                     target="_blank" href="${project.pageUrl}" class="badge ${badgeType}">${project.projectId}</a>,`
     })
-    return problemProjectHTML
+    return projectHTML
   }
 
-  function getModalTitleText(platform, problemType) {
-    if (problemType === 'not-found') {
+  function getModalTitleText(platform, projectType) {
+    if (projectType === 'not-found') {
       return `${platform.platformTitle} 找不到`
-    } else if (problemType === 'closed') {
+    } else if (projectType === 'closed') {
       return `${platform.platformTitle} 已結束`
-    } else if (problemType === 'no-latest-data') {
+    } else if (projectType === 'no-latest-data') {
       return `${platform.platformTitle} 有問題`
+    } else if (projectType === 'passed') {
+      return `${platform.platformTitle} 非熱門專案`
     } else {
       return ''
     }
