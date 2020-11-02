@@ -285,7 +285,26 @@ function getProjectStatus(platformId, projectId) {
     }),
     // campfire
     9: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
+      request(
+        {
+          url: `https://camp-fire.jp/projects/view/${projectId}`,
+          method: 'GET',
+        },
+        function (error, response, body) {
+          if (error || !body) {
+            console.log(error)
+            reject(error)
+          }
+
+          if (response.statusCode === 404) {
+            resolve(PROJECT_NOT_FOUND)
+          }
+
+          const $ = cheerio.load(body)
+          
+          resolve(PROJECT_NO_LATEST_DATA)
+        }
+      )
     }),
   }
   return projectStatusHandleMapByPlatformId[platformId]
