@@ -1,4 +1,4 @@
-const Project = require('../models/project')
+const Project = require('../drip-models/project')
 const JSEncrypt = require('node-jsencrypt')
 const decrypt = new JSEncrypt()
 

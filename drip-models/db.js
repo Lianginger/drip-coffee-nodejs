@@ -1,5 +1,5 @@
 const mysql = require('mysql')
-const dbConfig = require('../config/db')
+const dbConfig = require('../config/drip-db')
 
 const connection = mysql.createConnection({
   host: dbConfig.HOST,
