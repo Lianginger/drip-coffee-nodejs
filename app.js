@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 3000
 const exphbs = require('express-handlebars')
 const cors = require('cors')
 const CronJob = require('cron').CronJob

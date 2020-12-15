@@ -79,7 +79,6 @@ Project.getAllLiveProjectsByPlatform = (platformId) => {
 
 Project.checkCrawlerStatus = () => {
   const platformIdList = Object.keys(PLATFORM_MAP_BY_ID)
-  // const platformIdList = [3, 4, 7]
   platformIdList.forEach(async (platformId) => {
     const crawlerStatus = await getCrawlerStatusByPlatformId(platformId)
     Project.storeCrawlerStatus(platformId, crawlerStatus)
@@ -109,6 +108,12 @@ module.exports = Project
 async function getCrawlerStatusByPlatformId(platformId) {
   const time = process.hrtime()
   const allLiveProject = await Project.getAllLiveProjectsByPlatform(platformId)
+  console.log(
+    'platformId:',
+    platformId,
+    'allLiveProject.length:',
+    allLiveProject.length
+  )
   const numberOfLiveProject = allLiveProject.length
 
   const now = Date.now()
@@ -175,6 +180,12 @@ async function getCrawlerStatusByPlatformId(platformId) {
   const notFoundProjects = []
   const closedProjects = []
   const noLatestDataProjects = []
+  console.log(
+    'platformId:',
+    platformId,
+    'numberOfProblemProject',
+    numberOfProblemProject
+  )
 
   for (let i = 0; i < numberOfProblemProject; i++) {
     const project = problemProjects[i]
@@ -223,91 +234,154 @@ async function getCrawlerStatusByPlatformId(platformId) {
 function getProjectStatus(platformId, projectId) {
   const projectStatusHandleMapByPlatformId = {
     // kickstarter
-    1: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    1() {
+      return new Promise((resolve, reject) => {
+        resolve(PROJECT_NO_LATEST_DATA)
+      })
+    },
     // indiegogo
-    2: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    2() {
+      return new Promise((resolve, reject) => {
+        resolve(PROJECT_NO_LATEST_DATA)
+      })
+    },
     // zeczec
-    3: new Promise(async (resolve, reject) => {
-      await sleep(300)
-      request(
-        {
-          url: `https://www.zeczec.com/projects/${projectId}`,
-          method: 'GET',
-        },
-        function (error, response, body) {
-          if (error || !body) {
-            console.log(error)
-            reject(error)
-          }
+    3() {
+      return new Promise(async (resolve, reject) => {
+        await sleep(300)
+        request(
+          {
+            url: `https://www.zeczec.com/projects/${projectId}`,
+            method: 'GET',
+          },
+          function (error, response, body) {
+            if (error || !body) {
+              console.log(error)
+              reject(error)
+            }
+            if (response.statusCode === 404) {
+              resolve(PROJECT_NOT_FOUND)
+            }
 
-          if (response.statusCode === 404) {
-            resolve(PROJECT_NOT_FOUND)
+            const $ = cheerio.load(body)
+            // 若專案頁面沒有剩餘時間，表示專案已結束
+            if (
+              !$(
+                'body > div.container.mv4-l.mt3-l > div.gutter3-l.flex > div.w-30-l.w-100.ph3 > div.mb1.f7 > span.mr2.b'
+              )
+                .text()
+                .includes('剩餘時間')
+            ) {
+              resolve(PROJECT_CLOSED)
+            }
+            resolve(PROJECT_NO_LATEST_DATA)
           }
-
-          const $ = cheerio.load(body)
-          // 若專案頁面沒有剩餘時間，表示專案已結束
-          if (
-            !$(
-              'body > div.container.mv4-l.mt3-l > div.gutter3-l.flex > div.w-30-l.w-100.ph3 > div.mb1.f7 > span.mr2.b'
-            )
-              .text()
-              .includes('剩餘時間')
-          ) {
-            resolve(PROJECT_CLOSED)
-          }
-          resolve(PROJECT_NO_LATEST_DATA)
-        }
-      )
-    }),
+        )
+      })
+    },
     // flingV
-    4: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    4() {
+      return new Promise((resolve, reject) => {
+        request(
+          {
+            url: `https://www.flyingv.cc/projects/${projectId}`,
+            method: 'GET',
+            headers: {
+              Referer: 'https://drip-plugin.crowdfunding.coffee/',
+            },
+            followRedirect: false,
+          },
+          function (error, response, body) {
+            if (error || !body) {
+              console.log(error)
+              reject(error)
+            }
+
+            if (response.statusCode === 404 || response.statusCode === 302) {
+              resolve(PROJECT_NOT_FOUND)
+            }
+
+            resolve(PROJECT_NO_LATEST_DATA)
+          }
+        )
+      })
+    },
     // makuake
-    5: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    5() {
+      return new Promise((resolve, reject) => {
+        resolve(PROJECT_NO_LATEST_DATA)
+      })
+    },
     // greenfunding
-    6: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    6() {
+      return new Promise((resolve, reject) => {
+        resolve(PROJECT_NO_LATEST_DATA)
+      })
+    },
     // hahow
-    7: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    7() {
+      return new Promise((resolve, reject) => {
+        request(
+          {
+            url: `https://hahow.in/courses/${projectId}`,
+            method: 'GET',
+          },
+          function (error, response, body) {
+            if (error || !body) {
+              console.log(error)
+              reject(error)
+            }
+            if (response.statusCode === 404) {
+              resolve(PROJECT_NOT_FOUND)
+            }
+
+            // const $ = cheerio.load(body)
+            // console.log(2, body)
+            // if (
+            //   $('#main-screen div.purchase-wrap > div > button')
+            //     .text()
+            //     .includes('已下架')
+            // ) {
+            //   resolve(PROJECT_CLOSED)
+            // }
+            resolve(PROJECT_NO_LATEST_DATA)
+          }
+        )
+      })
+    },
     // wadiz
-    8: new Promise((resolve, reject) => {
-      resolve(PROJECT_NO_LATEST_DATA)
-    }),
+    8() {
+      return new Promise((resolve, reject) => {
+        resolve(PROJECT_NO_LATEST_DATA)
+      })
+    },
     // campfire
-    9: new Promise((resolve, reject) => {
-      request(
-        {
-          url: `https://camp-fire.jp/projects/view/${projectId}`,
-          method: 'GET',
-        },
-        function (error, response, body) {
-          if (error || !body) {
-            console.log(error)
-            reject(error)
-          }
+    9() {
+      return new Promise((resolve, reject) => {
+        request(
+          {
+            url: `https://camp-fire.jp/projects/view/${projectId}`,
+            method: 'GET',
+          },
+          function (error, response, body) {
+            if (error || !body) {
+              console.log(error)
+              reject(error)
+            }
 
-          if (response.statusCode === 404) {
-            resolve(PROJECT_NOT_FOUND)
-          }
+            if (response.statusCode === 404) {
+              resolve(PROJECT_NOT_FOUND)
+            }
 
-          const $ = cheerio.load(body)
-          
-          resolve(PROJECT_NO_LATEST_DATA)
-        }
-      )
-    }),
+            const $ = cheerio.load(body)
+
+            resolve(PROJECT_NO_LATEST_DATA)
+          }
+        )
+      })
+    },
   }
-  return projectStatusHandleMapByPlatformId[platformId]
+  return projectStatusHandleMapByPlatformId[platformId]()
 }
 
 function sleep(ms) {
