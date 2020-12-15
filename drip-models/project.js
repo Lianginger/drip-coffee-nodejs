@@ -108,12 +108,12 @@ module.exports = Project
 async function getCrawlerStatusByPlatformId(platformId) {
   const time = process.hrtime()
   const allLiveProject = await Project.getAllLiveProjectsByPlatform(platformId)
-  console.log(
-    'platformId:',
-    platformId,
-    'allLiveProject.length:',
-    allLiveProject.length
-  )
+  // console.log(
+  //   'platformId:',
+  //   platformId,
+  //   'allLiveProject.length:',
+  //   allLiveProject.length
+  // )
   const numberOfLiveProject = allLiveProject.length
 
   const now = Date.now()
@@ -180,12 +180,12 @@ async function getCrawlerStatusByPlatformId(platformId) {
   const notFoundProjects = []
   const closedProjects = []
   const noLatestDataProjects = []
-  console.log(
-    'platformId:',
-    platformId,
-    'numberOfProblemProject',
-    numberOfProblemProject
-  )
+  // console.log(
+  //   'platformId:',
+  //   platformId,
+  //   'numberOfProblemProject',
+  //   numberOfProblemProject
+  // )
 
   for (let i = 0; i < numberOfProblemProject; i++) {
     const project = problemProjects[i]
