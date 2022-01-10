@@ -32,6 +32,8 @@ Project.findById = ({ platformId, projectId }, result) => {
     SELECT * FROM crowdfunding.funding_timeline
     JOIN crowdfunding.fundings on crowdfunding.funding_timeline.source = crowdfunding.fundings.source and crowdfunding.funding_timeline.source_id = crowdfunding.fundings.source_id
     WHERE crowdfunding.funding_timeline.source = ${platformId} && crowdfunding.funding_timeline.source_id = '${projectId}';
+    SELECT timeline as customize_timeline FROM crowdfunding.customize_timeline
+    WHERE crowdfunding.customize_timeline.source = ${platformId} && crowdfunding.customize_timeline.source_id = '${projectId}';
     `,
     (err, res) => {
       if (err) {
@@ -42,7 +44,10 @@ Project.findById = ({ platformId, projectId }, result) => {
 
       if (res.length) {
         // console.log('found project: ', res[0])
-        result(null, res[0])
+        result(null, {
+          ...JSON.parse(JSON.stringify(res[0]))[0],
+          ...JSON.parse(JSON.stringify(res[1]))[0],
+        })
         return
       }
 

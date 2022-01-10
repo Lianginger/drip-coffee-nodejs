@@ -22,6 +22,7 @@ const pool = mysql.createPool({
   password: dbConfig.PASSWORD,
   database: dbConfig.DB,
   timezone: 'utc',
+  multipleStatements: true,
 })
 
 module.exports = {
